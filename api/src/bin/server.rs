@@ -1,14 +1,8 @@
 use std::net::{IpAddr, SocketAddr};
 
-use axum::Router;
 use clap::Parser;
 use tokio::signal;
-use tower::ServiceBuilder;
-use tower_http::trace::TraceLayer;
 use tracing_subscriber::EnvFilter;
-
-
-mod handler;
 
 #[derive(Debug, Parser)]
 pub struct Config {
@@ -35,12 +29,8 @@ async fn main() {
         .with_env_filter(EnvFilter::from_default_env())
         .init();
 
-    let middleware_stack = ServiceBuilder::new().layer(TraceLayer::new_for_http());
-
     // build our application with a route
-    let app = Router::new()
-        .nest("/", handler::routes())
-        .layer(middleware_stack.into_inner());
+    let app = api::app();
 
     // run it
     let addr = SocketAddr::from((args.host, args.port));
