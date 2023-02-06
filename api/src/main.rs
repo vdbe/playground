@@ -1,11 +1,14 @@
 use std::net::{IpAddr, SocketAddr};
 
-use axum::{response::Html, routing::get, Router};
+use axum::Router;
 use clap::Parser;
 use tokio::signal;
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::EnvFilter;
+
+
+mod handler;
 
 #[derive(Debug, Parser)]
 pub struct Config {
@@ -36,7 +39,7 @@ async fn main() {
 
     // build our application with a route
     let app = Router::new()
-        .route("/", get(handler))
+        .nest("/", handler::routes())
         .layer(middleware_stack.into_inner());
 
     // run it
@@ -75,8 +78,4 @@ async fn shutdown_signal() {
     }
 
     tracing::info!("signal received, starting graceful shutdown");
-}
-
-async fn handler() -> Html<&'static str> {
-    Html("<h1>Hello, World!</h1>")
 }
