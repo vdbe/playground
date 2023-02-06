@@ -1,17 +1,22 @@
-use axum::{Extension, Router, ServiceExt, routing::IntoMakeService};
+use axum::{Router, routing::IntoMakeService};
 use sea_orm::DatabaseConnection;
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
 
 mod error;
 mod handler;
+mod dto;
+mod util;
+mod service;
+
+type DbConn = DatabaseConnection;
 
 #[derive(Clone)]
 pub struct AppState {
-    db: DatabaseConnection,
+    db: DbConn,
 }
 
-pub fn app(db_conn: DatabaseConnection) -> IntoMakeService<Router<()>> {
+pub fn app(db_conn: DbConn) -> IntoMakeService<Router<()>> {
     let state = AppState { db: db_conn };
 
     let middleware_stack = ServiceBuilder::new()

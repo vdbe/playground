@@ -62,11 +62,11 @@ async fn db() -> Result<DatabaseConnection, DbErr> {
         .sqlx_logging_level(log::LevelFilter::Info);
         //.set_schema_search_path("my_schema".into());
 
-    Ok(Database::connect(opt).await?)
+    Database::connect(opt).await
 }
 
 async fn db_migration(db_connection: &DatabaseConnection) -> Result<(), DbErr> {
-    Ok(Migrator::up(&db_connection, None).await?)
+    Migrator::up(db_connection, None).await
 }
 
 #[tokio::main]

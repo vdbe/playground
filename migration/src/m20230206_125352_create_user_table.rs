@@ -1,5 +1,4 @@
 use sea_orm_migration::{prelude::*, sea_orm::prelude::Uuid};
-use time::OffsetDateTime;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -34,9 +33,9 @@ impl MigrationTrait for Migration {
                     )
                     .col(ColumnDef::new(User::Email).string().unique_key().not_null())
                     .col(ColumnDef::new(User::Password).string())
-                    .col(ColumnDef::new(User::LastLogin).date_time())
-                    .col(ColumnDef::new(User::CreatedAt).date_time())
-                    .col(ColumnDef::new(User::UpdatedAt).date_time())
+                    .col(ColumnDef::new(User::LastLogin).timestamp())
+                    .col(ColumnDef::new(User::CreatedAt).timestamp().not_null())
+                    .col(ColumnDef::new(User::UpdatedAt).timestamp().not_null())
                     .to_owned(),
             )
             .await
