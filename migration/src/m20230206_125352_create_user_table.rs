@@ -1,0 +1,64 @@
+use sea_orm_migration::{prelude::*, sea_orm::prelude::Uuid};
+use time::OffsetDateTime;
+
+#[derive(DeriveMigrationName)]
+pub struct Migration;
+
+#[async_trait::async_trait]
+impl MigrationTrait for Migration {
+    async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        manager
+            .create_table(
+                Table::create()
+                    .table(User::Table)
+                    .if_not_exists()
+                    .col(
+                        ColumnDef::new(User::Id)
+                            .integer()
+                            .not_null()
+                            .auto_increment()
+                            .primary_key(),
+                    )
+                    .col(
+                        ColumnDef::new(User::Uuid)
+                            .uuid()
+                            .unique_key()
+                            .default(Uuid::default())
+                            .not_null(),
+                    )
+                    .col(
+                        ColumnDef::new(User::Displayname)
+                            .string()
+                            .unique_key()
+                            .not_null(),
+                    )
+                    .col(ColumnDef::new(User::Email).string().unique_key().not_null())
+                    .col(ColumnDef::new(User::Password).string())
+                    .col(ColumnDef::new(User::LastLogin).date_time())
+                    .col(ColumnDef::new(User::CreatedAt).date_time())
+                    .col(ColumnDef::new(User::UpdatedAt).date_time())
+                    .to_owned(),
+            )
+            .await
+    }
+
+    async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        manager
+            .drop_table(Table::drop().table(User::Table).to_owned())
+            .await
+    }
+}
+
+/// Learn more at https://docs.rs/sea-query#iden
+#[derive(Iden)]
+enum User {
+    Table,
+    Id,
+    Uuid,
+    Displayname,
+    Email,
+    Password,
+    LastLogin,
+    CreatedAt,
+    UpdatedAt,
+}
