@@ -9,7 +9,7 @@ pub struct Model {
     pub id: i32,
     #[sea_orm(unique)]
     pub token: Uuid,
-    pub user_id: i32,
+    pub user_uuid: Uuid,
     pub expiry_date: TimeDateTime,
 }
 
@@ -17,8 +17,8 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(
         belongs_to = "super::user::Entity",
-        from = "Column::UserId",
-        to = "super::user::Column::Id",
+        from = "Column::UserUuid",
+        to = "super::user::Column::Uuid",
         on_update = "Cascade",
         on_delete = "Cascade"
     )]

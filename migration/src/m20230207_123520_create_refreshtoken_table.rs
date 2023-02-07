@@ -26,12 +26,12 @@ impl MigrationTrait for Migration {
                             .unique_key()
                             .not_null(),
                     )
-                    .col(ColumnDef::new(RefreshToken::UserId).integer().not_null())
+                    .col(ColumnDef::new(RefreshToken::UserUuid).uuid().not_null())
                     .foreign_key(
                         ForeignKey::create()
-                            .name("fk-refresh_token-user_id")
-                            .from(refresh_token::Entity, refresh_token::Column::UserId)
-                            .to(user::Entity, user::Column::Id)
+                            .name("fk-refresh_token-user_uuid")
+                            .from(refresh_token::Entity, refresh_token::Column::UserUuid)
+                            .to(user::Entity, user::Column::Uuid)
                             .on_delete(ForeignKeyAction::Cascade)
                             .on_update(ForeignKeyAction::Cascade),
                     )
@@ -58,6 +58,6 @@ enum RefreshToken {
     Table,
     Id,
     Token,
-    UserId,
+    UserUuid,
     ExpiryDate,
 }

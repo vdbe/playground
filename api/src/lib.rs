@@ -4,6 +4,7 @@ use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
 
 mod config;
+mod db;
 mod dto;
 mod error;
 mod handler;

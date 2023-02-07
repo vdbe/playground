@@ -5,7 +5,8 @@ use axum::{
 };
 
 use crate::{
-    dto::user::{LoginUserInput, RegisterUserInput, User},
+    config::constant::BEARER,
+    dto::user::{LoginPayload, LoginUserInput, RefreshPayload, RegisterUserInput, User},
     error::ApiResult,
     service::user::UserService,
     util::{jwt, validate_payload},
@@ -27,21 +28,39 @@ async fn user_get(State(state): State<AppState>) -> ApiResult<Json<Option<Vec<Us
 async fn user_register(
     State(state): State<AppState>,
     Json(input): Json<RegisterUserInput>,
-) -> ApiResult<Json<User>> {
+) -> ApiResult<Json<LoginPayload>> {
     validate_payload(&input)?;
 
     let user = UserService::register_user(input, &state.db).await?;
 
-    Ok(Json(user))
+    let token = jwt::sign(user.uuid)?;
+    let refresh_token = UserService::create_refresh_token(&user, &state.db).await?;
+
+    Ok(Json(LoginPayload {
+        refresh_token,
+        access_token: RefreshPayload {
+            access_token: token,
+            token_type: BEARER.to_string(),
+        },
+    }))
 }
 
 async fn user_login(
     State(state): State<AppState>,
     Json(input): Json<LoginUserInput>,
-) -> ApiResult<Json<User>> {
+) -> ApiResult<Json<LoginPayload>> {
     validate_payload(&input)?;
 
     let user = UserService::login_user(input, &state.db).await?;
 
-    Ok(Json(user))
+    let token = jwt::sign(user.uuid)?;
+    let refresh_token = UserService::create_refresh_token(&user, &state.db).await?;
+
+    Ok(Json(LoginPayload {
+        refresh_token,
+        access_token: RefreshPayload {
+            access_token: token,
+            token_type: BEARER.to_string(),
+        },
+    }))
 }

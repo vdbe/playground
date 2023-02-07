@@ -1,10 +1,13 @@
+use std::time::Duration;
+
 use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set};
 
 use entity::user::{self as user_table, Entity as EntityUser, Model as ModelUser};
 use uuid::Uuid;
 
 use crate::{
-    dto::user::{LoginUserInput, RegisterUserInput, User},
+    config::constant::REFRESH_TOKEN_TIMEOUT,
+    dto::user::{LoginUserInput, RefreshToken, RegisterUserInput, User},
     error::{ErrorRepr, ResultRepr, UserError},
     util::{
         encryption::{hash_password, verify_password},
@@ -16,6 +19,12 @@ use crate::{
 pub(crate) struct UserService;
 
 impl UserService {
+    pub(crate) async fn create_refresh_token(user: &User, db: &DbConn) -> ResultRepr<RefreshToken> {
+        let expiry_date = now_utc() + Duration::from_secs(REFRESH_TOKEN_TIMEOUT);
+
+        Ok(RefreshToken::new(user, expiry_date, db).await?)
+    }
+
     pub(crate) async fn get_all_users(db: &DbConn) -> ResultRepr<Option<Vec<User>>> {
         let users: Vec<ModelUser> = EntityUser::find().all(db).await?;
 
@@ -80,3 +89,5 @@ impl UserService {
         Ok(user.update(db).await?)
     }
 }
+
+impl RefreshToken {}
