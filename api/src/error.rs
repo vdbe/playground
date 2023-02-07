@@ -29,6 +29,9 @@ pub(crate) enum ErrorRepr {
     Db(#[from] sea_orm::DbErr),
 
     #[error(transparent)]
+    Jsonwebtoken(#[from] jsonwebtoken::errors::Error),
+
+    #[error(transparent)]
     PasswordHash(#[from] password_hash::errors::Error),
 
     #[error(transparent)]

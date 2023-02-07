@@ -3,6 +3,7 @@ use sea_orm::DatabaseConnection;
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
 
+mod config;
 mod dto;
 mod error;
 mod handler;

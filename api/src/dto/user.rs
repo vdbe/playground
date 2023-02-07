@@ -27,8 +27,8 @@ pub(crate) struct RegisterUserInput {
 
 #[derive(Debug, Serialize, Validate)]
 pub(crate) struct User {
-    #[serde(skip)]
-    id: i32,
+    //#[serde(skip)]
+    //id: i32,
     #[serde(skip)]
     uuid: Uuid,
     display_name: String,
@@ -48,7 +48,7 @@ impl Default for User {
         let now = now_utc();
 
         Self {
-            id: Default::default(),
+            //id: Default::default(),
             uuid: Uuid::new_v4(),
             display_name: Default::default(),
             email: Default::default(),
@@ -63,7 +63,7 @@ impl Default for User {
 impl From<entity::user::Model> for User {
     fn from(value: entity::user::Model) -> Self {
         Self {
-            id: value.id,
+            //id: value.id,
             uuid: value.uuid,
             display_name: value.displayname,
             email: value.email,
