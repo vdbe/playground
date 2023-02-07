@@ -4,7 +4,7 @@ use validator::Validate;
 
 use crate::{
     dto::user::User,
-    error::{ApiResult, PublicError},
+    error::ApiResult,
     service::user::UserService,
     util::validate_payload,
     AppState,
@@ -26,8 +26,7 @@ pub(crate) fn routes() -> Router<AppState> {
 
 async fn user_get(State(state): State<AppState>) -> ApiResult<Json<Option<Vec<User>>>> {
     let users = UserService::get_all_users(&state.db)
-        .await
-        .map_err(Into::<PublicError>::into)?;
+        .await?;
 
     Ok(Json(users))
 }
@@ -36,12 +35,9 @@ async fn user_post(
     State(state): State<AppState>,
     Json(input): Json<RegisterUserInput>,
 ) -> ApiResult<Json<User>> {
-    validate_payload(&input)
-        .map_err(Into::<PublicError>::into)?;
+    validate_payload(&input)?;
 
-    let user = UserService::register_user(input, &state.db)
-        .await
-        .map_err(Into::<PublicError>::into)?;
+    let user = UserService::register_user(input, &state.db).await?;
 
     Ok(Json(user))
 }
