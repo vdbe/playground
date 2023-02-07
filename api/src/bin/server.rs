@@ -1,7 +1,10 @@
-use std::{net::{IpAddr, SocketAddr}, time::Duration};
+use std::{
+    net::{IpAddr, SocketAddr},
+    time::Duration,
+};
 
 use clap::Parser;
-use sea_orm::{DatabaseConnection, DbErr, ConnectOptions, Database};
+use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
 use tokio::signal;
 use tracing::log;
 use tracing_subscriber::EnvFilter;
@@ -60,7 +63,7 @@ async fn db() -> Result<DatabaseConnection, DbErr> {
         .max_lifetime(Duration::from_secs(8))
         .sqlx_logging(true)
         .sqlx_logging_level(log::LevelFilter::Debug);
-        //.set_schema_search_path("my_schema".into());
+    //.set_schema_search_path("my_schema".into());
 
     Database::connect(opt).await
 }
@@ -100,4 +103,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error + 'static>> {
 
     Ok(())
 }
-

@@ -1,13 +1,13 @@
-use axum::{Router, routing::IntoMakeService};
+use axum::{routing::IntoMakeService, Router};
 use sea_orm::DatabaseConnection;
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
 
+mod dto;
 mod error;
 mod handler;
-mod dto;
-mod util;
 mod service;
+mod util;
 
 type DbConn = DatabaseConnection;
 
@@ -19,11 +19,11 @@ pub struct AppState {
 pub fn app(db_conn: DbConn) -> IntoMakeService<Router<()>> {
     let state = AppState { db: db_conn };
 
-    let middleware_stack = ServiceBuilder::new()
-        .layer(TraceLayer::new_for_http());
+    let middleware_stack = ServiceBuilder::new().layer(TraceLayer::new_for_http());
 
     Router::new()
-        .nest("/", handler::routes())
+        .nest("/user", handler::routes())
         .layer(middleware_stack.into_inner())
-        .with_state(state).into_make_service()
+        .with_state(state)
+        .into_make_service()
 }

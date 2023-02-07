@@ -2,19 +2,29 @@ use axum::{http::StatusCode, Json};
 use serde_json::{json, Value};
 use thiserror::Error as ErrorTrait;
 
+pub(crate) use user::UserError;
+
+use self::user::PublicUserError;
+
+mod user;
+
 #[derive(Debug, ErrorTrait)]
 pub(crate) enum PublicError {
     #[error(transparent)]
     Validation(#[from] validator::ValidationErrors),
 
+    #[error(transparent)]
+    User(#[from] PublicUserError),
+
     #[error("internal error")]
     Internal,
 }
 
-impl PublicError {}
-
 #[derive(Debug, ErrorTrait)]
 pub(crate) enum ErrorRepr {
+    #[error(transparent)]
+    User(#[from] UserError),
+
     #[error(transparent)]
     Db(#[from] sea_orm::DbErr),
 
@@ -38,6 +48,7 @@ impl From<ErrorRepr> for PublicError {
 
         match err {
             ErrorRepr::Validation(err) => Self::Validation(err),
+            ErrorRepr::User(err) => Self::User(err.into()),
             _ => Self::Internal,
         }
     }
@@ -51,9 +62,9 @@ impl From<ErrorRepr> for ApiError {
 
 impl From<PublicError> for ApiError {
     fn from(err: PublicError) -> Self {
-
         let status = match err {
             PublicError::Validation(_) => StatusCode::BAD_REQUEST,
+            PublicError::User(ref err) => err.into(),
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         };
 

@@ -1,4 +1,4 @@
-use time::{PrimitiveDateTime, OffsetDateTime};
+use time::{OffsetDateTime, PrimitiveDateTime};
 use validator::Validate;
 
 use crate::error::ResultRepr;
