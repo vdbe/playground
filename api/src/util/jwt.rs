@@ -1,10 +1,10 @@
 use std::time::Duration;
 
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
-use serde::{de::DeserializeOwned, Serialize, Deserialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use time::OffsetDateTime;
 
-use crate::{error::ResultRepr, config::env::JWT_SECRET};
+use crate::{config::env::JWT_SECRET, error::ResultRepr};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct Claims<T> {
@@ -38,7 +38,8 @@ where
 }
 
 pub(crate) fn verify<T>(token: &str) -> ResultRepr<T>
-where T:  DeserializeOwned
+where
+    T: DeserializeOwned,
 {
     Ok(jsonwebtoken::decode(
         token,

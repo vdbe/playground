@@ -8,7 +8,7 @@ use crate::{
     dto::user::{LoginUserInput, RegisterUserInput, User},
     error::ApiResult,
     service::user::UserService,
-    util::{validate_payload, jwt},
+    util::{jwt, validate_payload},
     AppState,
 };
 

@@ -1,4 +1,4 @@
-use sea_orm_migration::{prelude::*, sea_orm::prelude::Uuid};
+use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -18,13 +18,7 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
-                    .col(
-                        ColumnDef::new(User::Uuid)
-                            .uuid()
-                            .unique_key()
-                            .default(Uuid::default())
-                            .not_null(),
-                    )
+                    .col(ColumnDef::new(User::Uuid).uuid().unique_key().not_null())
                     .col(
                         ColumnDef::new(User::Displayname)
                             .string()
