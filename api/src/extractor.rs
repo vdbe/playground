@@ -1,4 +1,4 @@
-use axum::{async_trait, body::HttpBody, extract::FromRequest, http::Request, TypedHeader};
+use axum::{async_trait, extract::FromRequest, http::Request, TypedHeader};
 use headers::{authorization::Bearer, Authorization};
 use serde::{de::DeserializeOwned, Deserialize};
 use validator::Validate;

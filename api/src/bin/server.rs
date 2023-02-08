@@ -17,6 +17,8 @@ pub struct Config {
     pub host: IpAddr,
     #[clap(long, default_value = "3000", env)]
     pub port: u16,
+    #[clap(long, env)]
+    pub database_url: String,
 }
 
 impl Config {
@@ -51,9 +53,8 @@ async fn shutdown_signal() {
     tracing::info!("signal received, starting graceful shutdown");
 }
 
-async fn db() -> Result<DatabaseConnection, DbErr> {
-    let mut opt =
-        ConnectOptions::new("postgres://playground:toor123@localhost/playground".to_owned());
+async fn db(database_url: String) -> Result<DatabaseConnection, DbErr> {
+    let mut opt = ConnectOptions::new(database_url);
 
     opt.max_connections(100)
         .min_connections(5)
@@ -83,7 +84,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error + 'static>> {
         .with_env_filter(EnvFilter::from_default_env())
         .init();
 
-    let db_connection = db().await.expect("Failed to connect to the db");
+    let db_connection = db(args.database_url)
+        .await
+        .expect("Failed to connect to the db");
 
     db_migration(&db_connection).await?;
 
