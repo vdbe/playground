@@ -26,7 +26,8 @@ impl UserService {
         // FIX: Mismatch between expiry_date in db and claim
         let expiry_date = now_utc() + duration;
 
-        let refresh_token = RefreshToken::new(user_uuid, expiry_date, db).await?;
+        let refresh_token =
+            RefreshToken::new(user_uuid, expiry_date, db).await?;
 
         Ok(refresh_token)
     }
@@ -40,10 +41,23 @@ impl UserService {
         Ok(res)
     }
 
-    pub(crate) async fn login(input: LoginUserInput, db: &DbConn) -> ResultRepr<Uuid> {
+    pub(crate) async fn get_by_uuid(
+        uuid: Uuid,
+        db: &DbConn,
+    ) -> ResultRepr<User> {
+        let res = User::get_by_uuid(uuid, db).await?;
+
+        Ok(res)
+    }
+
+    pub(crate) async fn login(
+        input: LoginUserInput,
+        db: &DbConn,
+    ) -> ResultRepr<Uuid> {
         let password = input.password.ok_or(UserError::PasswordRequired)?;
 
-        let result = User::get_id_uuid_password_by_email(input.email, db).await?;
+        let result =
+            User::get_id_uuid_password_by_email(input.email, db).await?;
 
         let (id, uuid, password_hash) = result.ok_or(UserError::NotFound)?;
 
@@ -64,7 +78,10 @@ impl UserService {
         Ok(())
     }
 
-    pub(crate) async fn register_user(input: RegisterUserInput, db: &DbConn) -> ResultRepr<User> {
+    pub(crate) async fn register_user(
+        input: RegisterUserInput,
+        db: &DbConn,
+    ) -> ResultRepr<User> {
         // TODO: Check if displayname/email already exists
 
         let now = now_utc();

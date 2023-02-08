@@ -19,7 +19,12 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(User::Uuid).uuid().unique_key().not_null())
+                    .col(
+                        ColumnDef::new(User::Uuid)
+                            .uuid()
+                            .unique_key()
+                            .not_null(),
+                    )
                     .index(
                         Index::create()
                             .unique()
@@ -38,7 +43,12 @@ impl MigrationTrait for Migration {
                             .name("idx-user-displayname")
                             .col(user::Column::Displayname),
                     )
-                    .col(ColumnDef::new(User::Email).string().unique_key().not_null())
+                    .col(
+                        ColumnDef::new(User::Email)
+                            .string()
+                            .unique_key()
+                            .not_null(),
+                    )
                     .col(ColumnDef::new(User::Password).string())
                     .col(ColumnDef::new(User::LastLogin).timestamp())
                     .col(ColumnDef::new(User::CreatedAt).timestamp().not_null())

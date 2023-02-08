@@ -34,26 +34,35 @@ impl RefreshToken {
             expiry_date: Set(expiry_date),
         };
 
-        let model_refresh_token: ModelRefreshToken = active_refresh_token.insert(db).await?;
+        let model_refresh_token: ModelRefreshToken =
+            active_refresh_token.insert(db).await?;
 
         Ok(model_refresh_token.into())
     }
 
-    pub(crate) async fn get_user_by_token(token: Uuid, db: &DbConn) -> DbResult<(Self, User)> {
-        let (model_refresh_token, model_user): (ModelRefreshToken, Option<ModelUser>) =
-            EntityRefresToken::find()
-                .filter(entity_refresh_token::Column::Token.eq(token))
-                .find_also_related(entity_user::Entity)
-                .one(db)
-                .await?
-                .ok_or(DbError::NoResult)?;
+    pub(crate) async fn get_user_by_token(
+        token: Uuid,
+        db: &DbConn,
+    ) -> DbResult<(Self, User)> {
+        let (model_refresh_token, model_user): (
+            ModelRefreshToken,
+            Option<ModelUser>,
+        ) = EntityRefresToken::find()
+            .filter(entity_refresh_token::Column::Token.eq(token))
+            .find_also_related(entity_user::Entity)
+            .one(db)
+            .await?
+            .ok_or(DbError::NoResult)?;
 
         let model_user = model_user.ok_or(DbError::MissingRelation)?;
 
         Ok((model_refresh_token.into(), model_user.into()))
     }
 
-    pub(crate) async fn drop_by_token(token: Uuid, db: &DbConn) -> DbResult<()> {
+    pub(crate) async fn drop_by_token(
+        token: Uuid,
+        db: &DbConn,
+    ) -> DbResult<()> {
         let _res = EntityRefresToken::delete_many()
             .filter(entity_refresh_token::Column::Token.eq(token))
             .exec(db)

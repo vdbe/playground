@@ -1,15 +1,16 @@
 use entity::user::{
-    self as entity_user, ActiveModel as ActiveModelUser, Entity as EntityUser, Model as ModelUser,
+    self as entity_user, ActiveModel as ActiveModelUser, Entity as EntityUser,
+    Model as ModelUser,
 };
 use sea_orm::{
-    ActiveModelTrait, ActiveValue::Set, ColumnTrait, EntityTrait, QueryFilter, QuerySelect,
-    Unchanged,
+    ActiveModelTrait, ActiveValue::Set, ColumnTrait, EntityTrait, QueryFilter,
+    QuerySelect, Unchanged,
 };
 use uuid::Uuid;
 
 use crate::{dto::user::User, util::now_utc, DbConn};
 
-use super::error::DbResult;
+use super::error::{DbError, DbResult};
 
 // TODO: Create `UserIdentifier` enum with the variants id/uuid/email
 // and use this instead of seperate identiefiers
@@ -30,11 +31,22 @@ impl User {
         Ok(model_user.into())
     }
 
+    pub(crate) async fn get_by_uuid(uuid: Uuid, db: &DbConn) -> DbResult<Self> {
+        let user: User = EntityUser::find()
+            .filter(entity_user::Column::Uuid.eq(uuid))
+            .one(db)
+            .await?
+            .ok_or(DbError::NoResult)?
+            .into();
+
+        Ok(user)
+    }
+
     pub(crate) async fn get_id_uuid_password_by_email(
         email: String,
         db: &DbConn,
     ) -> DbResult<Option<(i32, Uuid, Option<String>)>> {
-        Ok(EntityUser::find()
+        let res = EntityUser::find()
             .filter(entity_user::Column::Email.eq(email))
             .select_only()
             .column(entity_user::Column::Id)
@@ -42,10 +54,15 @@ impl User {
             .column(entity_user::Column::Password)
             .into_tuple()
             .one(db)
-            .await?)
+            .await?;
+
+        Ok(res)
     }
 
-    pub(crate) async fn update_last_login(id: i32, db: &DbConn) -> DbResult<()> {
+    pub(crate) async fn update_last_login(
+        id: i32,
+        db: &DbConn,
+    ) -> DbResult<()> {
         let _id = ActiveModelUser {
             id: Unchanged(id),
             last_login: Set(Some(now_utc())),

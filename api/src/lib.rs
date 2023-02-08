@@ -22,7 +22,8 @@ pub struct AppState {
 pub fn app(db_conn: DbConn) -> IntoMakeService<Router<()>> {
     let state = AppState { db: db_conn };
 
-    let middleware_stack = ServiceBuilder::new().layer(TraceLayer::new_for_http());
+    let middleware_stack =
+        ServiceBuilder::new().layer(TraceLayer::new_for_http());
 
     Router::new()
         .nest("/user", handler::user::routes())

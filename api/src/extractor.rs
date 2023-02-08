@@ -25,7 +25,10 @@ where
 {
     type Rejection = ApiError;
 
-    async fn from_request(request: Request<B>, state: &S) -> Result<Self, Self::Rejection> {
+    async fn from_request(
+        request: Request<B>,
+        state: &S,
+    ) -> Result<Self, Self::Rejection> {
         let TypedHeader(Authorization(bearer)) =
             TypedHeader::<Authorization<Bearer>>::from_request(request, state)
                 .await

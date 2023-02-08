@@ -1,5 +1,8 @@
 use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+    password_hash::{
+        rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier,
+        SaltString,
+    },
     Argon2,
 };
 
@@ -32,7 +35,10 @@ pub(crate) async fn hash_password(password: String) -> ResultRepr<String> {
     Ok(recv.await??)
 }
 
-pub(crate) async fn verify_password(password: String, hash: String) -> ResultRepr<bool> {
+pub(crate) async fn verify_password(
+    password: String,
+    hash: String,
+) -> ResultRepr<bool> {
     let (send, recv) = tokio::sync::oneshot::channel();
 
     rayon::spawn(move || {

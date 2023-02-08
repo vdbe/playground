@@ -22,7 +22,6 @@ pub(crate) fn routes() -> Router<AppState> {
         .route("/login", post(login))
         .route("/logout", post(logout))
         .route("/refresh", post(refresh))
-        .route("/me", post(me))
 }
 
 async fn login(
@@ -39,7 +38,8 @@ async fn login(
     )
     .await?;
 
-    let claim_refresh_token = SubRefreshToken::new(refresh_token.token).claim()?;
+    let claim_refresh_token =
+        SubRefreshToken::new(refresh_token.token).claim()?;
     let claim_access_token = SubAccesToken::new(uuid).claim()?;
 
     let login_payload = LoginPayload {
@@ -53,7 +53,10 @@ async fn login(
     Ok(Json(login_payload))
 }
 
-async fn logout(State(state): State<AppState>, claims: Claims<SubRefreshToken>) -> ApiResult<()> {
+async fn logout(
+    State(state): State<AppState>,
+    claims: Claims<SubRefreshToken>,
+) -> ApiResult<()> {
     UserService::logout(claims.sub.token, &state.db).await?;
 
     Ok(())
@@ -73,10 +76,4 @@ async fn refresh(
     };
 
     Ok(Json(refresh_payload))
-}
-async fn me(
-    State(_state): State<AppState>,
-    claims: Claims<SubAccesToken>,
-) -> ApiResult<Json<Claims<SubAccesToken>>> {
-    Ok(Json(claims))
 }
