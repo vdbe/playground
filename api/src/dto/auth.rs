@@ -3,7 +3,10 @@ use time::PrimitiveDateTime;
 use uuid::Uuid;
 
 use crate::{
-    config::constant::{ACCESS_TOKEN_TIMEOUT, REFRESH_TOKEN_TIMEOUT},
+    config::{
+        constant::{ACCESS_TOKEN_TIMEOUT, REFRESH_TOKEN_TIMEOUT},
+        env::{JWT_ACCESS_SECRET, JWT_REFRESH_SECRET},
+    },
     util::jwt::{ClaimSub, EncodedClaim},
 };
 
@@ -12,9 +15,17 @@ pub(crate) type ClaimRefreshToken = EncodedClaim<SubRefreshToken>;
 
 impl ClaimSub for SubAccesToken {
     const DURATION: u64 = ACCESS_TOKEN_TIMEOUT;
+
+    fn secret<'a>() -> &'a [u8] {
+        &JWT_ACCESS_SECRET
+    }
 }
 impl ClaimSub for SubRefreshToken {
     const DURATION: u64 = REFRESH_TOKEN_TIMEOUT;
+
+    fn secret<'a>() -> &'a [u8] {
+        &JWT_REFRESH_SECRET
+    }
 }
 
 impl SubAccesToken {

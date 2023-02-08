@@ -4,7 +4,6 @@ use serde::{de::DeserializeOwned, Deserialize};
 use validator::Validate;
 
 use crate::{
-    config::env::JWT_SECRET,
     error::{ApiError, ErrorRepr},
     util::jwt::{ClaimSub, Claims},
 };
@@ -32,7 +31,7 @@ where
                 .await
                 .map_err(ErrorRepr::MissingBearer)?;
 
-        let sub = T::decode(bearer.token(), &JWT_SECRET)?;
+        let sub = T::decode(bearer.token())?;
 
         Ok(sub)
     }

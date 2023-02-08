@@ -3,10 +3,7 @@ use std::time::Duration;
 use axum::{extract::State, routing::post, Json, Router};
 
 use crate::{
-    config::{
-        constant::{BEARER, REFRESH_TOKEN_TIMEOUT},
-        env::JWT_SECRET,
-    },
+    config::constant::{BEARER, REFRESH_TOKEN_TIMEOUT},
     dto::{
         auth::{LoginPayload, RefreshPayload, SubAccesToken, SubRefreshToken},
         user::LoginUserInput,
@@ -42,8 +39,8 @@ async fn login(
     )
     .await?;
 
-    let claim_refresh_token = SubRefreshToken::new(refresh_token.token).claim(&JWT_SECRET)?;
-    let claim_access_token = SubAccesToken::new(uuid).claim(&JWT_SECRET)?;
+    let claim_refresh_token = SubRefreshToken::new(refresh_token.token).claim()?;
+    let claim_access_token = SubAccesToken::new(uuid).claim()?;
 
     let login_payload = LoginPayload {
         refresh_token: claim_refresh_token,
@@ -68,7 +65,7 @@ async fn refresh(
     let (_refresh_token, user) =
         UserService::verify_refresh_token(claims.sub.token, &state.db).await?;
 
-    let claim_access_token = SubAccesToken::new(user.uuid).claim(&JWT_SECRET)?;
+    let claim_access_token = SubAccesToken::new(user.uuid).claim()?;
 
     let refresh_payload = RefreshPayload {
         access_token: claim_access_token,

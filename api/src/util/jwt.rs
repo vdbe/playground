@@ -9,22 +9,24 @@ use crate::error::ResultRepr;
 pub(crate) trait ClaimSub: Sized {
     const DURATION: u64;
 
-    fn claim(self, secret: &[u8]) -> ResultRepr<EncodedClaim<Self>>
+    fn secret<'a>() -> &'a [u8];
+
+    fn claim(self) -> ResultRepr<EncodedClaim<Self>>
     where
         Self: Serialize,
     {
-        let encoded_claim = sign(self, Duration::from_secs(Self::DURATION), secret)?;
+        let encoded_claim = sign(self, Duration::from_secs(Self::DURATION))?;
 
         Ok(encoded_claim)
     }
 
-    fn decode(claim: &str, secret: &[u8]) -> ResultRepr<Claims<Self>>
+    fn decode(claim: &str) -> ResultRepr<Claims<Self>>
     where
         Self: DeserializeOwned,
     {
         Ok(jsonwebtoken::decode(
             claim,
-            &DecodingKey::from_secret(secret),
+            &DecodingKey::from_secret(Self::secret()),
             &Validation::default(),
         )
         .map(|data| data.claims)?)
@@ -69,14 +71,14 @@ impl<T: ClaimSub> Claims<T> {
     }
 }
 
-fn sign<T: ClaimSub>(sub: T, duration: Duration, secret: &[u8]) -> ResultRepr<EncodedClaim<T>>
+fn sign<T: ClaimSub>(sub: T, duration: Duration) -> ResultRepr<EncodedClaim<T>>
 where
     T: Serialize,
 {
     let encoded_claim = jsonwebtoken::encode(
         &Header::default(),
         &Claims::new(sub, duration),
-        &EncodingKey::from_secret(secret),
+        &EncodingKey::from_secret(T::secret()),
     )?;
 
     Ok(EncodedClaim::<T> {
