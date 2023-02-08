@@ -9,9 +9,10 @@ edition = "2021"
 entity = { path = "../entity" }
 migration = { path = "../migration" }
 argon2 = "^0.4"
-axum = "^0.6"
+axum = { version = "^0.6", features = ["headers"] }
 clap = { version = "^4", features = ["derive", "env"] }
 dotenv = "^0.15"
+headers = "^0.3"
 jsonwebtoken = "^8"
 lazy_static = "^1"
 password-hash = { version = "^0.4", features = ["default", "std"] }

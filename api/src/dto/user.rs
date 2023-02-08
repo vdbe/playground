@@ -1,5 +1,3 @@
-use std::time::SystemTime;
-
 use serde::{Deserialize, Serialize};
 use time::PrimitiveDateTime;
 use uuid::Uuid;
@@ -33,40 +31,16 @@ pub(crate) struct User {
     pub(crate) id: i32,
     #[serde(skip)]
     pub(crate) uuid: Uuid,
-    display_name: String,
-    email: String,
-    //#[serde(skip)]
-    //password: Option<String>,
+    pub(crate) display_name: String,
+    pub(crate) email: String,
     #[serde(skip)]
-    last_login: Option<PrimitiveDateTime>,
+    pub(crate) password: Option<String>,
     #[serde(skip)]
-    created_at: PrimitiveDateTime,
+    pub(crate) last_login: Option<PrimitiveDateTime>,
     #[serde(skip)]
-    updated_at: PrimitiveDateTime,
-}
-
-#[derive(Debug, Serialize)]
-pub(crate) struct RefreshPayload {
-    pub(crate) access_token: String,
-    pub(crate) token_type: String,
-}
-
-#[derive(Debug, Serialize)]
-pub(crate) struct LoginPayload {
-    #[serde(flatten)]
-    pub(crate) refresh_token: RefreshToken,
-    #[serde(flatten)]
-    pub(crate) access_token: RefreshPayload,
-}
-
-#[derive(Debug, Serialize)]
-pub(crate) struct RefreshToken {
-    #[serde(rename = "refresh_token")]
-    pub(crate) token: Uuid,
-    #[serde(skip_serializing)]
-    pub(crate) user_uuid: Uuid,
-    #[serde(skip_serializing)]
-    pub(crate) expiry_date: PrimitiveDateTime,
+    pub(crate) created_at: PrimitiveDateTime,
+    #[serde(skip)]
+    pub(crate) updated_at: PrimitiveDateTime,
 }
 
 impl Default for User {
@@ -78,25 +52,10 @@ impl Default for User {
             uuid: Uuid::new_v4(),
             display_name: Default::default(),
             email: Default::default(),
-            //password: Default::default(),
+            password: Default::default(),
             last_login: None,
             created_at: now,
             updated_at: now,
-        }
-    }
-}
-
-impl From<entity::user::Model> for User {
-    fn from(value: entity::user::Model) -> Self {
-        Self {
-            id: value.id,
-            uuid: value.uuid,
-            display_name: value.displayname,
-            email: value.email,
-            //password: value.password,
-            last_login: value.last_login,
-            created_at: value.created_at,
-            updated_at: value.updated_at,
         }
     }
 }

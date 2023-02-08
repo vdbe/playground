@@ -1,3 +1,4 @@
+use entity::user;
 use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
@@ -19,11 +20,23 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(ColumnDef::new(User::Uuid).uuid().unique_key().not_null())
+                    .index(
+                        Index::create()
+                            .unique()
+                            .name("idx-user-uuid")
+                            .col(user::Column::Uuid),
+                    )
                     .col(
                         ColumnDef::new(User::Displayname)
                             .string()
                             .unique_key()
                             .not_null(),
+                    )
+                    .index(
+                        Index::create()
+                            .unique()
+                            .name("idx-user-displayname")
+                            .col(user::Column::Displayname),
                     )
                     .col(ColumnDef::new(User::Email).string().unique_key().not_null())
                     .col(ColumnDef::new(User::Password).string())

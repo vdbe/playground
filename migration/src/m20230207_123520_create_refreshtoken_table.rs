@@ -26,6 +26,12 @@ impl MigrationTrait for Migration {
                             .unique_key()
                             .not_null(),
                     )
+                    .index(
+                        Index::create()
+                            .unique()
+                            .name("idx-refresh_token-uuid")
+                            .col(refresh_token::Column::Token),
+                    )
                     .col(ColumnDef::new(RefreshToken::UserUuid).uuid().not_null())
                     .foreign_key(
                         ForeignKey::create()

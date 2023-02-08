@@ -4,6 +4,8 @@ use thiserror::Error as ErrorTrait;
 
 pub(crate) use user::UserError;
 
+use crate::db::error::DbError;
+
 use self::user::PublicUserError;
 
 mod user;
@@ -16,6 +18,12 @@ pub(crate) enum PublicError {
     #[error(transparent)]
     User(#[from] PublicUserError),
 
+    #[error(transparent)]
+    Jsonwebtoken(#[from] jsonwebtoken::errors::Error),
+
+    #[error(transparent)]
+    TypedHeaderRejection(axum::extract::rejection::TypedHeaderRejection),
+
     #[error("internal error")]
     Internal,
 }
@@ -26,10 +34,16 @@ pub(crate) enum ErrorRepr {
     User(#[from] UserError),
 
     #[error(transparent)]
-    Db(#[from] sea_orm::DbErr),
+    Db(#[from] DbError),
+
+    #[error(transparent)]
+    SeaOrm(#[from] sea_orm::DbErr),
 
     #[error(transparent)]
     Jsonwebtoken(#[from] jsonwebtoken::errors::Error),
+
+    #[error(transparent)]
+    MissingBearer(axum::extract::rejection::TypedHeaderRejection),
 
     #[error(transparent)]
     PasswordHash(#[from] password_hash::errors::Error),
@@ -51,6 +65,8 @@ impl From<ErrorRepr> for PublicError {
 
         match err {
             ErrorRepr::Validation(err) => Self::Validation(err),
+            ErrorRepr::Jsonwebtoken(err) => Self::Jsonwebtoken(err),
+            ErrorRepr::MissingBearer(err) => Self::TypedHeaderRejection(err),
             ErrorRepr::User(err) => Self::User(err.into()),
             _ => Self::Internal,
         }

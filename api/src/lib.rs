@@ -7,6 +7,7 @@ mod config;
 mod db;
 mod dto;
 mod error;
+mod extractor;
 mod handler;
 mod service;
 mod util;
@@ -24,7 +25,8 @@ pub fn app(db_conn: DbConn) -> IntoMakeService<Router<()>> {
     let middleware_stack = ServiceBuilder::new().layer(TraceLayer::new_for_http());
 
     Router::new()
-        .nest("/user", handler::routes())
+        .nest("/user", handler::user::routes())
+        .nest("/auth", handler::auth::routes())
         .layer(middleware_stack.into_inner())
         .with_state(state)
         .into_make_service()
