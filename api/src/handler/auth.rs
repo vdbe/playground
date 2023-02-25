@@ -1,6 +1,10 @@
 use std::time::Duration;
 
-use axum::{extract::State, routing::post, Json, Router};
+use axum::{
+    extract::State,
+    routing::{get, post},
+    Json, Router,
+};
 
 use crate::{
     config::constant::{BEARER, REFRESH_TOKEN_TIMEOUT},
@@ -11,7 +15,7 @@ use crate::{
     error::ApiResult,
     service::user::UserService,
     util::{
-        jwt::{ClaimSub, Claims},
+        jwt::{self, Claims, ClaimsDecoded},
         validate_payload,
     },
     AppState,
@@ -22,6 +26,7 @@ pub(crate) fn routes() -> Router<AppState> {
         .route("/login", post(login))
         .route("/logout", post(logout))
         .route("/refresh", post(refresh))
+        .route("/me", get(me))
 }
 
 async fn login(
@@ -38,9 +43,11 @@ async fn login(
     )
     .await?;
 
-    let claim_refresh_token =
-        SubRefreshToken::new(refresh_token.token).claim()?;
-    let claim_access_token = SubAccesToken::new(uuid).claim()?;
+    let sub_refresh_token = SubRefreshToken::new(refresh_token.token);
+    let sub_access_token = SubAccesToken::new(uuid);
+
+    let claim_refresh_token = Claims::new(sub_refresh_token)?;
+    let claim_access_token = Claims::new(sub_access_token)?;
 
     let login_payload = LoginPayload {
         refresh_token: claim_refresh_token,
@@ -55,20 +62,22 @@ async fn login(
 
 async fn logout(
     State(state): State<AppState>,
-    claims: Claims<SubRefreshToken>,
+    claims: ClaimsDecoded<SubRefreshToken>,
 ) -> ApiResult<()> {
-    UserService::logout(claims.sub.token, &state.db).await?;
+    UserService::logout(claims.sub().token, &state.db).await?;
 
     Ok(())
 }
+
 async fn refresh(
     State(state): State<AppState>,
-    claims: Claims<SubRefreshToken>,
+    claims: ClaimsDecoded<SubRefreshToken>,
 ) -> ApiResult<Json<RefreshPayload>> {
     let (_refresh_token, user) =
-        UserService::verify_refresh_token(claims.sub.token, &state.db).await?;
+        UserService::verify_refresh_token(claims.sub().token, &state.db)
+            .await?;
 
-    let claim_access_token = SubAccesToken::new(user.uuid).claim()?;
+    let claim_access_token = Claims::new(SubAccesToken::new(user.uuid))?;
 
     let refresh_payload = RefreshPayload {
         access_token: claim_access_token,
@@ -76,4 +85,11 @@ async fn refresh(
     };
 
     Ok(Json(refresh_payload))
+}
+
+async fn me(
+    State(_state): State<AppState>,
+    claims: ClaimsDecoded<SubAccesToken>,
+) -> ApiResult<Json<jwt::Decoded<SubAccesToken>>> {
+    Ok(Json(claims.claims()))
 }

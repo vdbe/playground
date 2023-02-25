@@ -7,20 +7,17 @@ use crate::{
         constant::{ACCESS_TOKEN_TIMEOUT, REFRESH_TOKEN_TIMEOUT},
         env::{JWT_ACCESS_SECRET, JWT_REFRESH_SECRET},
     },
-    util::jwt::{ClaimSub, EncodedClaim},
+    util::jwt::{ClaimsEncoded, ClaimsSubTrait},
 };
 
-pub(crate) type ClaimAccessToken = EncodedClaim<SubAccesToken>;
-pub(crate) type ClaimRefreshToken = EncodedClaim<SubRefreshToken>;
-
-impl ClaimSub for SubAccesToken {
+impl ClaimsSubTrait for SubAccesToken {
     const DURATION: u64 = ACCESS_TOKEN_TIMEOUT;
 
     fn secret<'a>() -> &'a [u8] {
         &JWT_ACCESS_SECRET
     }
 }
-impl ClaimSub for SubRefreshToken {
+impl ClaimsSubTrait for SubRefreshToken {
     const DURATION: u64 = REFRESH_TOKEN_TIMEOUT;
 
     fn secret<'a>() -> &'a [u8] {
@@ -42,14 +39,14 @@ impl SubRefreshToken {
 
 #[derive(Debug, Serialize)]
 pub(crate) struct LoginPayload {
-    pub(crate) refresh_token: ClaimRefreshToken,
+    pub(crate) refresh_token: ClaimsEncoded<SubRefreshToken>,
     #[serde(flatten)]
     pub(crate) access_token: RefreshPayload,
 }
 
 #[derive(Debug, Serialize)]
 pub(crate) struct RefreshPayload {
-    pub(crate) access_token: ClaimAccessToken,
+    pub(crate) access_token: ClaimsEncoded<SubAccesToken>,
     pub(crate) token_type: String,
 }
 
@@ -78,5 +75,5 @@ pub(crate) struct RefreshToken {
 #[derive(Debug, Deserialize)]
 pub(crate) struct RefreshTokenInput {
     #[serde(rename = "refresh_token")]
-    pub(crate) token: ClaimRefreshToken,
+    pub(crate) token: ClaimsEncoded<SubRefreshToken>,
 }

@@ -1,11 +1,11 @@
 use axum::{async_trait, extract::FromRequest, http::Request, TypedHeader};
 use headers::{authorization::Bearer, Authorization};
-use serde::{de::DeserializeOwned, Deserialize};
+use serde::Deserialize;
 use validator::Validate;
 
 use crate::{
     error::{ApiError, ErrorRepr},
-    util::jwt::{ClaimSub, Claims},
+    util::jwt::{self, ClaimsDecoded, ClaimsEncoded, ClaimsSubTrait},
 };
 
 #[derive(Deserialize, Debug, Validate)]
@@ -17,11 +17,12 @@ pub struct RequestUser {
 }
 
 #[async_trait]
-impl<S, B, T> FromRequest<S, B> for Claims<T>
+impl<S, B, T> FromRequest<S, B> for ClaimsDecoded<T>
 where
     B: Send + 'static,
     S: Send + Sync,
-    T: ClaimSub + DeserializeOwned,
+    T: ClaimsSubTrait,
+    jwt::Decoded<T>: for<'a> Deserialize<'a>,
 {
     type Rejection = ApiError;
 
@@ -34,8 +35,10 @@ where
                 .await
                 .map_err(ErrorRepr::MissingBearer)?;
 
-        let sub = T::decode(bearer.token())?;
+        let token = bearer.token();
+        let claims: ClaimsEncoded<T> = From::from(token.to_owned());
+        let claims = claims.decode()?;
 
-        Ok(sub)
+        Ok(claims)
     }
 }

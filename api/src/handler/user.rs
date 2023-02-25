@@ -5,6 +5,7 @@ use axum::{
     Json, Router,
 };
 
+use crate::util::jwt::ClaimsDecoded;
 use crate::{
     dto::{
         auth::SubAccesToken,
@@ -12,7 +13,7 @@ use crate::{
     },
     error::ApiResult,
     service::user::UserService,
-    util::{jwt::Claims, validate_payload},
+    util::validate_payload,
     AppState,
 };
 
@@ -35,9 +36,9 @@ async fn register(
 
 async fn me(
     State(state): State<AppState>,
-    claims: Claims<SubAccesToken>,
+    claims: ClaimsDecoded<SubAccesToken>,
 ) -> ApiResult<Json<User>> {
-    let user = UserService::get_by_uuid(claims.sub.uuid, &state.db).await?;
+    let user = UserService::get_by_uuid(claims.sub().uuid, &state.db).await?;
 
     Ok(Json(user))
 }
