@@ -43,7 +43,7 @@ impl<T: ClaimsSubTrait> Claims<T> {
             claims: Decoded {
                 sub: claims,
                 exp: exp.unix_timestamp(),
-                iat: exp.unix_timestamp(),
+                iat: iat.unix_timestamp(),
             },
             _type: PhantomData,
         };
