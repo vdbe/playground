@@ -27,8 +27,10 @@ pub(crate) struct Decoded<T: ClaimsSubTrait> {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(transparent)]
 pub(crate) struct Claims<T: ClaimsSubTrait, State = Decoded<T>> {
     claims: State,
+    #[serde(skip)]
     _type: PhantomData<T>,
 }
 
@@ -82,7 +84,8 @@ impl<T: ClaimsSubTrait> Claims<T, Encoded> {
         let key = DecodingKey::from_secret(T::secret());
         let validation = Validation::default();
 
-        let decoded_claims = jsonwebtoken::decode(token.as_str(), &key, &validation)?.claims;
+        let decoded_claims =
+            jsonwebtoken::decode(token.as_str(), &key, &validation)?.claims;
 
         Ok(Claims {
             claims: decoded_claims,
