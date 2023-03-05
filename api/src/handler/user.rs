@@ -4,8 +4,9 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
+use axum_macros::debug_handler;
 
-use crate::util::jwt::ClaimsDecoded;
+use crate::{dto::user::UpdateUserInput, util::jwt::ClaimsDecoded};
 use crate::{
     dto::{
         auth::SubAccesToken,
@@ -20,7 +21,7 @@ use crate::{
 pub(crate) fn routes() -> Router<AppState> {
     Router::new()
         .route("/", post(register))
-        .route("/me", get(me))
+        .route("/me", get(me).patch(update))
 }
 
 async fn register(
@@ -34,11 +35,27 @@ async fn register(
     Ok(StatusCode::CREATED)
 }
 
+#[debug_handler]
+async fn update(
+    State(state): State<AppState>,
+    claims: ClaimsDecoded<SubAccesToken>,
+    Json(input): Json<UpdateUserInput>,
+) -> ApiResult<()> {
+    validate_payload(&input)?;
+
+    let user_uuid = claims.sub().user_uuid;
+
+    UserService::update_by_uuid(user_uuid, input, &state.db).await?;
+
+    Ok(())
+}
+
 async fn me(
     State(state): State<AppState>,
     claims: ClaimsDecoded<SubAccesToken>,
 ) -> ApiResult<Json<User>> {
-    let user = UserService::get_by_uuid(claims.sub().uuid, &state.db).await?;
+    let user =
+        UserService::get_by_uuid(claims.sub().user_uuid, &state.db).await?;
 
     Ok(Json(user))
 }

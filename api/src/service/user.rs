@@ -5,7 +5,7 @@ use uuid::Uuid;
 use crate::{
     dto::{
         auth::RefreshToken,
-        user::{LoginUserInput, RegisterUserInput, User},
+        user::{LoginUserInput, RegisterUserInput, UpdateUserInput, User},
     },
     error::{ErrorRepr, ResultRepr, UserError},
     util::{
@@ -48,6 +48,37 @@ impl UserService {
         let res = User::get_by_uuid(uuid, db).await?;
 
         Ok(res)
+    }
+
+    pub(crate) async fn update_by_uuid(
+        uuid: Uuid,
+        mut update_user_input: UpdateUserInput,
+        db: &DbConn,
+    ) -> ResultRepr<()> {
+        // Checks if all fields are `None`
+        if update_user_input == Default::default() {
+            return Ok(());
+        }
+
+        // Hash password if not `None`/`Some(None)`
+        let password = if let Some(password) = update_user_input.password {
+            let password = if let Some(password) = password {
+                // TODO: Check if it matches previous password?
+                Some(hash_password(password).await?)
+            } else {
+                None
+            };
+
+            Some(password)
+        } else {
+            None
+        };
+
+        update_user_input.password = password;
+
+        User::update_by_uuid(uuid, update_user_input, db).await?;
+
+        Ok(())
     }
 
     pub(crate) async fn login(

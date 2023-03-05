@@ -3,12 +3,17 @@ use entity::user::{
     Model as ModelUser,
 };
 use sea_orm::{
-    ActiveModelTrait, ActiveValue::Set, ColumnTrait, EntityTrait, QueryFilter,
-    QuerySelect, Unchanged,
+    ActiveModelTrait,
+    ActiveValue::{NotSet, Set, Unchanged},
+    ColumnTrait, EntityTrait, QueryFilter, QuerySelect,
 };
 use uuid::Uuid;
 
-use crate::{dto::user::User, util::now_utc, DbConn};
+use crate::{
+    dto::user::{UpdateUserInput, User},
+    util::now_utc,
+    DbConn,
+};
 
 use super::error::{DbError, DbResult};
 
@@ -40,6 +45,32 @@ impl User {
             .into();
 
         Ok(user)
+    }
+
+    pub(crate) async fn update_by_uuid(
+        uuid: Uuid,
+        update_user_input: UpdateUserInput,
+        db: &DbConn,
+    ) -> DbResult<()> {
+        let displayname = update_user_input.display_name.map_or(NotSet, Set);
+        let email = update_user_input.email.map_or(NotSet, Set);
+        let password = update_user_input.password.map_or(NotSet, Set);
+
+        let mut upstream_user: ActiveModelUser = EntityUser::find()
+            .filter(entity_user::Column::Uuid.eq(uuid))
+            .one(db)
+            .await?
+            .ok_or(DbError::NoResult)?
+            .into();
+
+        // TODO: Check don't update if values are the same as upstream
+        upstream_user.displayname = displayname;
+        upstream_user.email = email;
+        upstream_user.password = password;
+
+        upstream_user.update(db).await?;
+
+        Ok(())
     }
 
     pub(crate) async fn get_id_uuid_password_by_email(

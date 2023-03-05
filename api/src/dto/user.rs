@@ -25,6 +25,21 @@ pub(crate) struct RegisterUserInput {
     pub(crate) password: Option<String>,
 }
 
+#[derive(Debug, Deserialize, Validate, PartialEq, Default)]
+pub(crate) struct UpdateUserInput {
+    #[validate(length(min = 2, max = 20))]
+    pub(crate) display_name: Option<String>,
+    #[validate(email)]
+    pub(crate) email: Option<String>,
+    #[validate(length(min = 6))]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "::serde_with::rust::double_option"
+    )]
+    pub(crate) password: Option<Option<String>>,
+}
+
 #[derive(Debug, Serialize, Validate)]
 pub(crate) struct User {
     #[serde(skip)]

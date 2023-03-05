@@ -27,7 +27,7 @@ impl ClaimsSubTrait for SubRefreshToken {
 
 impl SubAccesToken {
     pub(crate) fn new(user_uuid: Uuid) -> Self {
-        Self { uuid: user_uuid }
+        Self { user_uuid }
     }
 }
 
@@ -58,8 +58,8 @@ pub(crate) struct SubRefreshToken {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct SubAccesToken {
-    #[serde(rename = "access_token")]
-    pub(crate) uuid: Uuid,
+    #[serde(rename = "user_uuid")]
+    pub(crate) user_uuid: Uuid,
 }
 
 #[derive(Debug, Serialize)]
